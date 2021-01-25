@@ -8,7 +8,7 @@ mathjax: true
 categories:
 - Loss
 tags:
-- Center Loss
+- CenterLoss
 - NormFace
 - L-Softmax
 - SphereFace

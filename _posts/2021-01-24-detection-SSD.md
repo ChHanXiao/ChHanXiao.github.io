@@ -2,7 +2,7 @@
 author: 
 date: 2021-01-24 13:11+08:00
 layout: post
-title: "目标检测-SSD"
+title: "SSD"
 description: ""
 mathjax: true
 categories:

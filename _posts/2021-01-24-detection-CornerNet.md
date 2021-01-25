@@ -2,7 +2,7 @@
 author: 
 date: 2021-01-24 14:50+08:00
 layout: post
-title: "目标检测-CornerNet"
+title: "CornerNet"
 description: ""
 mathjax: true
 categories:

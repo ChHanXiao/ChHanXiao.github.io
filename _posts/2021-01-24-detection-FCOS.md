@@ -2,7 +2,7 @@
 author: 
 date: 2021-01-24 14:26+08:00
 layout: post
-title: "目标检测-FCOS"
+title: "FCOS"
 description: ""
 mathjax: true
 categories:

@@ -8,7 +8,7 @@ mathjax: true
 categories:
 - Loss
 tags:
-- Smooth L1
+- SmoothL1
 - IoU
 - GIoU
 - DIoU

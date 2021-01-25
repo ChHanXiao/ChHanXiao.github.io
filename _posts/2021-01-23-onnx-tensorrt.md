@@ -176,14 +176,13 @@ public:
 
 然后是ModelImporter::importInputs，这里ModelImporter::importInput是控制输入的，如果想对onnx的输入尺寸做修改，请修改里面的trt_dims即可
 
-然后是ModelImporter::parseGraph，这里会调用getBuiltinOpImporterMap函数，获得**builtin_op_importers**所有自定义OP
+然后是ModelImporter::parseGraph，这里会调用getBuiltinOpImporterMap函数，获得**builtin_op_importers**所有自定义op
 
 解析时查询op，调用(*importFunc)，跳转到DEFINE_BUILTIN_OP_IMPORTER(op)
 
 ```c++
 const string_map<NodeImporter>& opImporters = getBuiltinOpImporterMap();
 //...
-
 //...
 // Dispatch to appropriate converter.
 const NodeImporter* importFunc{nullptr};
@@ -212,43 +211,36 @@ typedef std::function<NodeImportResult(
 DEFINE_BUILTIN_OP_IMPORTER(op)通过宏定义
 
 ```c++
-#define DECLARE_BUILTIN_OP_IMPORTER(op)                                                                                \
-    NodeImportResult import##op(                                                                                       \
+#define DECLARE_BUILTIN_OP_IMPORTER(op)                                                                       \
+    NodeImportResult import##op(                                                                              \
         IImporterContext* ctx, ::ONNX_NAMESPACE::NodeProto const& node, std::vector<TensorOrWeights>& inputs)
 
-#define DEFINE_BUILTIN_OP_IMPORTER(op)                                                                                 \
-    NodeImportResult import##op(                                                                                       \
-        IImporterContext* ctx, ::ONNX_NAMESPACE::NodeProto const& node, std::vector<TensorOrWeights>& inputs);         \
-    static const bool op##_registered_builtin_op = registerBuiltinOpImporter(#op, import##op);                         \
-    IGNORE_UNUSED_GLOBAL(op##_registered_builtin_op);                                                                  \
-    NodeImportResult import##op(                                                                                       \
+#define DEFINE_BUILTIN_OP_IMPORTER(op)                                                                        \
+    NodeImportResult import##op(                                                                              \
+        IImporterContext* ctx, ::ONNX_NAMESPACE::NodeProto const& node, std::vector<TensorOrWeights>& inputs);\
+    static const bool op##_registered_builtin_op = registerBuiltinOpImporter(#op, import##op);                \
+    IGNORE_UNUSED_GLOBAL(op##_registered_builtin_op);                                                         \
+    NodeImportResult import##op(                                                                              \
         IImporterContext* ctx, ::ONNX_NAMESPACE::NodeProto const& node, std::vector<TensorOrWeights>& inputs)
 ```
 
 主要完成以下三项工作：
+
 1、将onnx输入数据转化为trt要求的数据格式
+
 2、建立trt层，层定义参考**Nvinfer.h**
+
 3、计算trt输出结果
 
 ## 第二部分：自定义op流程
-
-TODO：自定义op
 
 ### DEFINE_BUILTIN_OP_IMPORTER 
 
 ### plugin层定义
 
+[官方plugin](https://github.com/NVIDIA/TensorRT/tree/master/plugin)
 
 
-
-
-
-
-
-
-
-
-https://github.com/NVIDIA/TensorRT/tree/master/plugin
 
 
 
@@ -263,8 +255,6 @@ IPluginV2IOExt：此接口通过扩展不同的I/O数据类型和张量格式，
 IPluginCreator：用户实现层的插件创建者类。
 
 IPluginRegistry：所有插件的单一注册点，反序列化期间查找插件实现，pluginregistry只支持IPluginV2类型的插件，并且应该有一个相应的IPluginCreator实现。
-
-
 
 
 

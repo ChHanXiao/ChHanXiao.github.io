@@ -34,8 +34,10 @@ github：https://github.com/HaohanWang/HFC
 ### 图片高低频分离(非重点)
 
 为了方便后面分析，先对图片的高低频分离过程进行说明(如果看不懂也无所谓，不影响阅读，知道啥是高低频成分就可以了)。 
+
  ![image.png-9.5kB](/assets/classification/img/1/1-1.png) 
  表示样本对，x是图片，y是对应的标注，表示傅里叶变换，表示反傅里叶变换，表示对样本x进行傅里叶变换，z是x的频率分量，表示反傅里叶变换。而表示阈值函数，该函数通过一个半径阈值，将频率分量分成低频分量和高频分量，该阈值函数具体如下： 
+
  ![image.png-30.1kB](/assets/classification/img/1/1-2.png)
 
 其中表示当前位置和中心位置之间的距离，文中用的是欧氏距离。注意在FFT频谱图中靠近中心区域是低频分量，远离中心区域是高频分量。**低频成分一般就是图片纹理或者信息，高频成分就是一些边缘和像素锐变区域**。
@@ -45,6 +47,7 @@ github：https://github.com/HaohanWang/HFC
 ### 初步实验分析
 
 为了引入本文论点，作者做了一个简单实验。首先用CIFAR10在训练数据训练一个resnet18分类模型，接着在测试集上进行测试，此时可以得到模型正确率，接着进一步通过傅里叶变换，把原图转换到频域，再用一个半径阈值r=12，分离出高频部分和低频部分，再对高频和低频部分进行反傅里叶变换，得到高频重建图片和低频重建图片，然后测试这两张图片。结果出现了一些非常奇怪的现象：**模型对人眼看上去和原图差不多的低频图错误预测，反而正确预测了全黑的高频图**。一个典型图片如下所示： 
+
 <img src="/assets/classification/img/1/1-3.png" alt="image.png-42.2kB" style="zoom:50%;" />
 
 左边图是原始测试图，可以看出其很大概率认为是鸟，但是对低频成分重建图(中间图)却几乎可以肯定是飞机，高频成分重建图(右边图)到是预测为鸟，这种现象在10k张测试集中大概有600张。
@@ -54,6 +57,7 @@ github：https://github.com/HaohanWang/HFC
 ### 提出假设
 
 针对上述不符合常理的现象，作者提出了合理假设：人类只能感知低频分量，而CNN对低频和高频分量都可以感知，图示如下： 
+
  <img src="/assets/classification/img/1/1-4.png" alt="image.png-94.3kB" style="zoom:50%;" />
 
 对于任何一个数据集，都应该包括语义信息(纹理信息或者说低频信息)和高频信息，只不过包括比例不定而已，并且对于同一个分布数据集，其语义分布和高频分布都应该有自己的分布特性。可以简单认为对于同一个类别标注的数据集，假设该数据集收集自多个场景，每个场景内的语义分布应该是近乎一致的(不然也不会标注为同一类)，但是高频分布就不一定了，可能和特定域有关，**该高频成分可能包括和类别相关的特定信息，也可以包括分布外的噪声，并且该噪声对模型训练是有害的，会影响泛化能力**。
@@ -67,6 +71,7 @@ github：https://github.com/HaohanWang/HFC
 ### 实验论证假设
 
 上述假设是作者自己提出的，为了使得假设更加可信，作者进行了后续详细实验。 
+
  ![image.png-154.6kB](/assets/classification/img/1/1-5.png)
 
 **(1) nutural label VS shuffled label** 
@@ -93,6 +98,7 @@ github：https://github.com/HaohanWang/HFC
 遗憾的是暂时没有一种手段把噪声高频成分过滤掉，仅仅保留有用高频成分。
 
 **(2) 低频成分 VS 高频成分** 
+
  ![image.png-39.5kB](/assets/classification/img/1/1-6.png)
 
 对图片进行高低频分离然后重建，得到图片，在这两种数据上训练，然后在原始数据集上测试，结果如上所示。可以得到如下结论：
@@ -102,6 +108,7 @@ github：https://github.com/HaohanWang/HFC
 
 **(3) 启发式组件通俗解释** 
  这里说的启发式组件是指的Dropout、Mix-up、BatchNorm和Adversarial Training等，这些组件已经被证明可以提高模型泛化能力，作者试图采用本文观点进行分析成功的原因。 
+
  ![image.png-504.7kB](/assets/classification/img/1/1-7.png)
 
 上图比较多，主要看第二行，但是可以归纳为：
@@ -115,6 +122,7 @@ github：https://github.com/HaohanWang/HFC
 从以上分析可以看出，**如果试图从数据的高低频分布以及CNN先学低频再学高频这个特性进行分析目前所提组件，是完全可以解释通的**。
 
 **(4) BN训练过程分析** 
+
  ![image.png-146kB](/assets/classification/img/1/1-8.png)
 
 vaillla是指没有引入BN的模型。作者假设BN优势之一是通过归一化来对齐不同预测信号的分布差异，没有经过BN训练的模型可能无法轻松获取这些高频成分，而且高频成分通常是较小的幅度，通过归一化后可以增加其幅值。总之BN层引入可以让模型轻易捕获高频成分，并且由于对齐效应，大部分捕获的会是有用高频成分，从而加快收敛速度，提高泛化能力。
@@ -125,15 +133,19 @@ vaillla是指没有引入BN的模型。作者假设BN优势之一是通过归一
 
 前面说过对抗样本可以和高频成分联系起来，其可以认为是扰动了人类无法感知的高频成分，从而使得网络无法识别。作者首先分析对抗样本对网络造成的影响，然后提出了针对性改进。
 
-首先采用标准的FGSM或者PGD等方法生成对抗样本，然后将对抗样本联合原始数据进行训练，最后可视化第一次卷积核参数，如下所示： 
+首先采用标准的FGSM或者PGD等方法生成对抗样本，然后将对抗样本联合原始数据进行训练，最后可视化第一次卷积核参数，如下所示：
+
+
  ![image.png-77.8kB](/assets/classification/img/1/1-9.png)
 
 可以发现经过对抗样本训练后的模型，卷积核参数更加平衡(相邻位置的权重非常相似)。通过以前的论文也可以证明**平滑卷积核能够有效地移除高频信号**，从本文假设来理解上述现象就是一个非常自然的想法了。
 
 有了上述的论证，那么我们可以试图思考：**如果我直接把卷积核平滑化是不是可以提高鲁棒性？**为此作者采用了如下公式： 
+
  ![image.png-7.7kB](/assets/classification/img/1/1-10.png)
 
 其实就是在每个位置的核参数都按照一定比例加上邻近位置的核参数，使得核参数平滑。效果如下所示： 
+
  ![image.png-101.4kB](/assets/classification/img/1/1-11.png)
 
 可以发现当应用平滑方法时，CNN精度的性能下降非常多，但是对抗鲁棒性提高了一点。这个小实验可以说明几点：
@@ -170,11 +182,13 @@ github：https://github.com/Manuscrit/Area-Under-the-Margin-Ranking
 Not all data in a typical training set help with generalization
 
 AUM的定义非常简单： 
+
  ![image.png-14.9kB](/assets/classification/img/2/2-1.png)
 
 对于任何一个样本，z是指softmax预测概率值，zy是指的分配label位置对应的预测输出值，max zi是指除了label位置预测输出最大值。当样本label正确时候，该值比较大，当label不正确的时候，该值比较小甚至是负数。
 
 利用该特性就可以把错误标签样本找出来。仅仅计算样本当前epoch时候的AUM值不太靠谱，一个错误样本应该aum值都差不多，故作者采用了所有epoch的aum平均值： 
+
  ![image.png-24.5kB](/assets/classification/img/2/2-2.png)
 
 ![image.png-169.3kB](/assets/classification/img/2/2-3.png)
@@ -184,6 +198,8 @@ AUM的定义非常简单：
 基于上述办法可以得到每个样本的AUM值，但是如何设置阈值来确定噪声样本？本文提出Indicator Samples概念自动确定阈值。
 
 做法其实非常简单：挑选一部分正确label数据，然后把这些数据全部算作c+1类，相当于在原始类别基础上扩展一个类，可以发现这些样本数据其实全部算是错误label数据，可以利用这部分数据的aum值来作为阈值。
+
+
 
 ![image.png-140.6kB](/assets/classification/img/2/2-4.png)
 
@@ -200,6 +216,8 @@ AUM的定义非常简单：
  momentum, a learning rate of 0.1, and a batch size of 256。The learning rate is dropped by a factor of 10 at epochs 150 and 225. 
 
 When computing the AUM to identify mislabeled data, we train these models up until the first learning rate drop (150 epochs)，并且把batch  size变成64，主要是增加sgd训练时候的方差，对统计aum有好处。在移除错误样本后，再采用上述策略进行训练。
+
+
 
 ![image.png-101kB](/assets/classification/img/2/2-6.png)
 
@@ -236,6 +254,8 @@ github：https://github.com/pluskid/fitting-random-labels
 - - Shuffled pixels：随机选择一种像素顺序，以这个顺序重排所有训练和测试样本的像素
   - Random pixels： 对每个样本各随机应用一种像素顺序
   - Gaussian：对每一个样本，用和原样本一样均值和方差的高斯分布随机生成随机的图片
+  
+  
 
 ![img](/assets/classification/img/3/3-1.pdf)
 
@@ -257,6 +277,8 @@ github：https://github.com/pluskid/fitting-random-labels
 
 - - Early stop，Batch normalization
 
+
+
 <img src="/assets/classification/img/3/3-2.png" alt="img" style="zoom: 80%;" />
 
 <img src="/assets/classification/img/3/3-3.png" alt="img" style="zoom: 80%;" />
@@ -269,11 +291,15 @@ github：https://github.com/pluskid/fitting-random-labels
 
 这篇论文认为之前大部分对于神经网络的表达能力的工作都太侧重于“population level”的结论。这篇论文认为与实践中更相关的应该是在有限样本情况下神经网络的表达能力。并得出了一个结论：
 
+
+
 ![img](/assets/classification/img/3/3-5.png)
 
 **The role of implicit regularization**
 
 最后这篇论文以一个线性模型为例，讨论了SGD（stochastic gradient descent）本身带有隐含的正则化作用。
+
+
 
 ![img](/assets/classification/img/3/3-6.png)
 

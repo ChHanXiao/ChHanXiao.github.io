@@ -2,7 +2,7 @@
 author: 
 date: 2021-01-24 15:20+08:00
 layout: post
-title: "目标检测-CenterNet"
+title: "CenterNet"
 description: ""
 mathjax: true
 categories:

@@ -2,7 +2,7 @@
 author: 
 date: 2021-01-24 16:50+08:00
 layout: post
-title: "目标检测-TTFNet"
+title: "TTFNet"
 description: ""
 mathjax: true
 categories:

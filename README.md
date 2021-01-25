@@ -1,1 +1,1 @@
-# [Go to My blog](https://chhanxiao.github.io/)
+# [Go to My Blog](https://chhanxiao.github.io/)

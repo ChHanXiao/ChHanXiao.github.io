@@ -2,7 +2,7 @@
 author: 
 date: 2021-01-24 14:11+08:00
 layout: post
-title: "目标检测-RetinaNet"
+title: "RetinaNet"
 description: ""
 mathjax: true
 categories:

@@ -2,7 +2,7 @@
 author: 
 date: 2021-01-24 12:52+08:00
 layout: post
-title: "Backbone-ShuffleNet"
+title: "ShuffleNet"
 description: ""
 mathjax: true
 categories:

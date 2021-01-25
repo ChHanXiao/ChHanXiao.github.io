@@ -2,7 +2,7 @@
 author: 
 date: 2021-01-24 13:52+08:00
 layout: post
-title: "目标检测-YOLO系列"
+title: "YOLO系列"
 description: ""
 mathjax: true
 categories:
