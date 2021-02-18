@@ -55,9 +55,7 @@ $$
 L_{k}=\frac{-1}{N}\sum_{c=1}^{C}\sum_{i=1}^{H}\sum_{j=1}^{W}\left \{ \begin{array}{c} (1-p_{cij})^{\alpha}\log(p_{cij}) & \text{if }  y_{cij}=1 \\ (1-y_{cij})^{\beta}(p_{cij})^{\alpha}\log(1-p_{cij}) & \text{otherwise} \end{array} \right.
 $$
 
-
 **offset部分损失函数：**和cornernet一样，是表示在取整计算时丢失的精度信息，但这里使用的L1损失。$ \hat{O_\tilde{p}}$是预测的offset，$(\frac{p}{R}-\tilde{p})$是实际offset。
-
 
 $$
 L_{off}=\frac{1}{N}\sum_{p}\left | \hat{O_\tilde{p}}-(\frac{p}{R}-\tilde{p})\right|
